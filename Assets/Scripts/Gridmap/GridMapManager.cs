@@ -45,6 +45,7 @@ namespace GridSystem
                 for (int y = 0; y < dimensions.y; y++)
                 {
                     _grids[startingPoint.x + x , startingPoint.y + y].Occupation = id;
+                    _grids[startingPoint.x + x , startingPoint.y + y].Weight = byte.MaxValue;
                     _grids[startingPoint.x + x , startingPoint.y + y].GameObject.GetComponent<SpriteRenderer>().color = Color.blue;
                 }
             }
@@ -101,6 +102,10 @@ namespace GridSystem
         public void ResetHighlightedGrids()
         {
             _highligtedGrids.Clear();
+        }
+        public Vector3 GridToWorldLocation(Vector2Int location)
+        {
+            return new Vector3(location.x * _cellSize , location.y * _cellSize , 0f);
         }
     }
 }

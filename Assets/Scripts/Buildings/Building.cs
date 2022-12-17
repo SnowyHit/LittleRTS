@@ -26,6 +26,7 @@ namespace Buildings
         public Vector2Int Dimensions;
         public Action<float> onHealthPointChanged;
         public Action onDestroyed;
+        public GameObject Prefab;
         public void GetDamaged(float trueDamage)
         {
             HealthPoint -= trueDamage;

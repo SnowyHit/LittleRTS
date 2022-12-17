@@ -17,7 +17,7 @@ namespace Generic.Enums
     {
         Paused,
         Started,
-        OnMenu 
+        OnMenu ,
     }
     
 }

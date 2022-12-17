@@ -50,6 +50,7 @@ MonoBehaviour:
   _healthPoint: 50
   _type: 1
   Dimensions: {x: 2, y: 3}
+  Prefab: {fileID: 4308576243206677110, guid: 04d7c1fa572af6f4baf980fc3f32a498, type: 3}
 --- !u!1 &4775090369695485426
 GameObject:
   m_ObjectHideFlags: 0
