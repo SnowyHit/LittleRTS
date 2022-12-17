@@ -7,14 +7,8 @@ namespace Buildings
 {
     public class Barracks : Building
     {
-        void Start()
-        {
-            
-        }
-        void Update()
-        {
-            
-        }
+        public List<string> ProducableAgentIDs;
+        public Vector2Int FlagPoint;
     }
 
 }

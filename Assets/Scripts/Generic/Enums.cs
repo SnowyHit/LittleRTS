@@ -17,7 +17,10 @@ namespace Generic.Enums
     {
         Paused,
         Started,
-        OnMenu ,
+    }
+    public enum AgentType
+    {
+        Soldier
     }
     
 }

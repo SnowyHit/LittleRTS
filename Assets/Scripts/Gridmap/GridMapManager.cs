@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 namespace GridSystem
 {
-
     public class GridMapManager : MonoBehaviour
     {
         //Keeping a reference List for my map. Now hardcoding it to 30x30 for simplicity's sake.
@@ -50,6 +50,19 @@ namespace GridSystem
                 }
             }
         }
+         public void UnOccupyGrids(Vector2Int startingPoint ,Vector2Int dimensions)
+        {
+            for (int x = 0; x < dimensions.x; x++)
+            {
+                for (int y = 0; y < dimensions.y; y++)
+                {
+                    _grids[startingPoint.x + x , startingPoint.y + y].Occupation = "";
+                    _grids[startingPoint.x + x , startingPoint.y + y].Weight = byte.MinValue;
+                    _grids[startingPoint.x + x , startingPoint.y + y].GameObject.GetComponent<SpriteRenderer>().color = Color.white;
+                    _grids[startingPoint.x + x , startingPoint.y + y].isAgent = false;
+                }
+            }
+        }
         public bool isSpaceOccupied(Vector2Int startingPoint ,Vector2Int dimensions)
         {
             for (int x = 0; x < dimensions.x; x++)
@@ -62,6 +75,12 @@ namespace GridSystem
             }
             return false;
         }
+        public bool isGridTraversable(Vector2Int gridLocation)
+        {
+            if((gridLocation.x < 0 || gridLocation.x > 29)||(gridLocation.y < 0 || gridLocation.y > 29))
+                return false;
+            return _grids[gridLocation.x, gridLocation.y].Weight != byte.MaxValue;
+        }
         public byte GetGridWeight(Vector2Int position)
         {
             return _grids[position.x, position.y].Weight;
@@ -73,6 +92,10 @@ namespace GridSystem
         public MapGrid GetGrid(Vector3 position)
         {
             Vector2Int location = GetGridLocation(position);
+            return _grids[location.x, location.y];
+        }
+        public MapGrid GetGrid(Vector2Int location)
+        {
             return _grids[location.x, location.y];
         }
         public void HighlightGrids(Vector2Int position , Vector2Int dimension , Color color)
@@ -98,7 +121,6 @@ namespace GridSystem
                 grid.Occupation = "";
             }
         }
-
         public void ResetHighlightedGrids()
         {
             _highligtedGrids.Clear();
@@ -106,6 +128,59 @@ namespace GridSystem
         public Vector3 GridToWorldLocation(Vector2Int location)
         {
             return new Vector3(location.x * _cellSize , location.y * _cellSize , 0f);
+        }
+
+        public List<Vector2Int> FindRouteAStar(Vector2Int start, Vector2Int end)
+        {
+            //Check if End Grid Is reachable.
+            if(!isGridTraversable(end))
+            {
+                return null;
+            }
+            
+            HashSet<Vector2Int> pool = new HashSet<Vector2Int>();// Open cells.
+            HashSet<Vector2Int> visited = new HashSet<Vector2Int>(); // Visited cells.
+            Dictionary<Vector2Int, Vector2Int> parents = new Dictionary<Vector2Int, Vector2Int>(); // Tracks where did we reach a given cell from.
+
+            // 1. Traverse the grid until you find the end.
+            pool.Add(start);
+            while (pool.Count > 0)
+            {
+                var bestCell = pool
+                    .OrderBy(c => (c - start).sqrMagnitude +(5f * (end - c).sqrMagnitude)) // A* heuristics.
+                    .First();
+                visited.Add(bestCell);
+                pool.Remove(bestCell);
+                var candidates = new List<Vector2Int> {
+                    new Vector2Int(bestCell.x + 1, bestCell.y),
+                    new Vector2Int(bestCell.x - 1, bestCell.y),
+                    new Vector2Int(bestCell.x, bestCell.y + 1),
+                    new Vector2Int(bestCell.x, bestCell.y - 1),
+                };
+                foreach (var candidate in candidates)
+                {
+                    if (visited.Contains(candidate) || !isGridTraversable(candidate)) // OR THE GRID IS NON EXİSTENT - UNREACHABLE
+                        continue;
+                    parents[candidate] = bestCell;
+                    if (candidate == end)
+                        break;
+                    pool.Add(candidate);
+                }
+                if (parents.ContainsKey(end))
+                    break;
+            }
+
+            // 2. Assemble the route.
+            if (!parents.ContainsKey(end))
+                return null;
+            var route = new List<Vector2Int>();
+            var cell = end;
+            while (cell != start)
+            {
+                route.Insert(0, cell);
+                cell = parents[cell];
+            }
+            return route;
         }
     }
 }

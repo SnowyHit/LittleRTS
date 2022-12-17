@@ -25,18 +25,20 @@ namespace Buildings
         public Sprite BuildingImage{get{return buildingImage;} private set{}}
         public Vector2Int Dimensions;
         public Action<float> onHealthPointChanged;
-        public Action onDestroyed;
+        public Action<Building> onDestroyed;
+        public Vector2Int baseGrid;
         public GameObject Prefab;
+        
         public void GetDamaged(float trueDamage)
         {
             HealthPoint -= trueDamage;
         }
-
         void CheckDestroyStatus(float currentHealth)
         {
-            if(HealthPoint <= 0)
+            if(currentHealth <= 0)
             {
-                onDestroyed?.Invoke();
+                Debug.Log("Ondestroyed Invoked");
+                onDestroyed?.Invoke(this);
             }
         }
     }

@@ -7,14 +7,6 @@ namespace Buildings
 {
     public class PowerPlant : Building
     {
-        void Start()
-        {
-            
-        }
-        void Update()
-        {
-            
-        }
-    }
 
+    }
 }
