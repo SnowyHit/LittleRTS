@@ -11,7 +11,7 @@ namespace GridSystem
         private MapGrid[,] _grids = new MapGrid[30,30];
         private float _cellSize;
         public GameObject TilePrefab;
-        private Vector2Int lastLightedGridPosition ;
+        public List<MapGrid> _highligtedGrids= new List<MapGrid>();
         
         private void Awake() 
         {
@@ -36,7 +36,10 @@ namespace GridSystem
         public void OccupyGrids(string id , Vector2Int startingPoint ,Vector2Int dimensions)
         {
             if(isSpaceOccupied(startingPoint , dimensions))
+            {
+                ResetGridHighlights();
                 return;
+            }
             for (int x = 0; x < dimensions.x; x++)
             {
                 for (int y = 0; y < dimensions.y; y++)
@@ -46,7 +49,7 @@ namespace GridSystem
                 }
             }
         }
-        bool isSpaceOccupied(Vector2Int startingPoint ,Vector2Int dimensions)
+        public bool isSpaceOccupied(Vector2Int startingPoint ,Vector2Int dimensions)
         {
             for (int x = 0; x < dimensions.x; x++)
             {
@@ -62,39 +65,42 @@ namespace GridSystem
         {
             return _grids[position.x, position.y].Weight;
         }
-        public Vector2Int GetGrid(Vector3 position)
+        public Vector2Int GetGridLocation(Vector3 position)
         {
             return new Vector2Int(Mathf.Clamp((int)(position.x / _cellSize) , 0, 29), Mathf.Clamp((int)(position.y / _cellSize) , 0, 29));
         }
-        public void LightGrid(Vector2Int position , Vector2Int dimension)
+        public MapGrid GetGrid(Vector3 position)
         {
-            if(position == lastLightedGridPosition)
-                return;
-            if(isSpaceOccupied(position , dimension))
-            {
-                HighlightGrids(lastLightedGridPosition , dimension , Color.red);
-                return;
-            }
-            if(_grids[lastLightedGridPosition.x, lastLightedGridPosition.y].Occupation == "")
-            {
-               HighlightGrids(lastLightedGridPosition , dimension , Color.white);
-            }
-            if(_grids[position.x , position.y].Occupation == "")
-            {
-                lastLightedGridPosition = position;
-                HighlightGrids(lastLightedGridPosition , dimension , Color.green);
-            }
+            Vector2Int location = GetGridLocation(position);
+            return _grids[location.x, location.y];
         }
-
         public void HighlightGrids(Vector2Int position , Vector2Int dimension , Color color)
         {
+            ResetGridHighlights();
             for (int x = 0; x < dimension.x; x++)
             {
                 for (int y = 0; y < dimension.y; y++)
                 {
-                    _grids[position.x + x , position.y + y].GameObject.GetComponent<SpriteRenderer>().color = color;
+                    if(_grids[position.x + x , position.y + y].Occupation == "")
+                    {
+                        _grids[position.x + x , position.y + y].GameObject.GetComponent<SpriteRenderer>().color = color;
+                        _highligtedGrids.Add(_grids[position.x + x , position.y + y]);
+                    }
                 }
             }
+        }
+        public void ResetGridHighlights()
+        {
+            foreach (MapGrid grid in _highligtedGrids)
+            {
+                grid.GameObject.GetComponent<SpriteRenderer>().color = Color.white;
+                grid.Occupation = "";
+            }
+        }
+
+        public void ResetHighlightedGrids()
+        {
+            _highligtedGrids.Clear();
         }
     }
 }
