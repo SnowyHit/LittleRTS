@@ -39,6 +39,7 @@ public class GameManager : Singleton<GameManager>
     {
         UIManagerRef.onProductionItemClicked += BuildingPlacementCheckRunner;
         UIManagerRef.onResetClick += ResetPlacingBuilding;
+        UIManagerRef.onMilitaryItemClicked += SpawnMilitaryUnit;
     }
     private void Update() 
     {
@@ -58,17 +59,20 @@ public class GameManager : Singleton<GameManager>
         }
         if(Input.GetMouseButtonUp(1))
         {
+            occupationOfGrids.Clear();
             MapGrid hoveringGrid = GridMapManagerRef.GetGrid(Camera.main.ScreenToWorldPoint(Input.mousePosition));
             foreach (MapGrid grid in SelectedGrids)
             {
                 if(grid.Occupation == "" || occupationOfGrids.Contains(grid.Occupation))
                     continue;
+                occupationOfGrids.Add(grid.Occupation);
                 if(grid.isAgent)
                 {
                     Agent tempAgent = AgentManagerRef.GetAgent(grid.Position);
-                    Vector2Int endGridLocation = hoveringGrid.Position;
-                    Vector2Int startGridLocation = tempAgent.gridLocation;
-                    tempAgent.Move(GameManager.Instance.GridMapManagerRef.FindRouteAStar(startGridLocation ,endGridLocation));
+                    if(tempAgent != null)
+                    {
+                        tempAgent.Move(hoveringGrid.Position);
+                    }
                 }
                 else
                 {
@@ -143,6 +147,10 @@ public class GameManager : Singleton<GameManager>
             PlaceBuilding(hoveringGridLocation);
             PlacingBuilding = false;
         }
+    }
+    void SpawnMilitaryUnit(Building buildingRef, Agent agentRef)
+    {
+        AgentManagerRef.SpawnAgent(agentRef.Id , GridMapManagerRef.GetGrid(new Vector2Int(0,0)) , GridMapManagerRef.GetGrid(((Barracks)buildingRef).FlagPoint));
     }
 
     public void PlaceBuilding(Vector2Int startingLocation)

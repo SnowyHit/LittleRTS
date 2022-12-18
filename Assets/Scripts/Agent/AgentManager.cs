@@ -54,7 +54,7 @@ namespace AgentSystem
         {
             _selectedAgents = agents;
         }
-        public void SpawnAgent(string id , MapGrid spawnGrid)
+        public void SpawnAgent(string id , MapGrid spawnGrid , MapGrid flagGrid = null)
         {
             foreach (var item in _availableAgents)
             {
@@ -69,16 +69,26 @@ namespace AgentSystem
                     GameManager.Instance.GridMapManagerRef.OccupyGrids(tempAgent.Id + "/" + _activeAgents.Count , spawnGrid.Position , Vector2Int.one);
                     tempAgent.gridLocation = spawnGrid.Position;
                     tempAgent.onAgentMove += AgentMovementSyncWithGrids;
+                    tempAgent.onStartMovement += AgentMovementStartUnoccupyGrids;
                     _activeAgents.Add(tempAgent);
                     spawnGrid.isAgent = true;
+
+                    if(flagGrid != null)
+                    {
+                        tempAgent.Move(flagGrid.Position);
+                    }
                 }
             }
         }
         public void AgentMovementSyncWithGrids(Vector2Int movementStart , Vector2Int movementEnd , Agent agent)
         {
-                GameManager.Instance.GridMapManagerRef.UnOccupyGrids(movementStart, Vector2Int.one);
-                GameManager.Instance.GridMapManagerRef.OccupyGrids(agent.Id,movementEnd, Vector2Int.one);
-                GameManager.Instance.GridMapManagerRef.GetGrid(movementEnd).isAgent = true;
+            GameManager.Instance.GridMapManagerRef.UnOccupyGrids(movementStart, Vector2Int.one);
+            GameManager.Instance.GridMapManagerRef.OccupyGrids(agent.Id,movementEnd, Vector2Int.one);
+            GameManager.Instance.GridMapManagerRef.GetGrid(movementEnd).isAgent = true;
+        }
+        public void AgentMovementStartUnoccupyGrids(Vector2Int startPos, Agent agent)
+        {
+            GameManager.Instance.GridMapManagerRef.UnOccupyGrids(startPos, Vector2Int.one);
         }
         public void RemoveAgent(Agent agentToRemove)
         {

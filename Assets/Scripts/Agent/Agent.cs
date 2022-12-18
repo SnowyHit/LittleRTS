@@ -18,21 +18,24 @@ namespace AgentSystem
         Coroutine _actorMovement;
         public Sprite AgentImage;
         public string AgentName;
-        // Start is called before the first frame update
-        public void Move(List<Vector2Int> route)
+        public void Move(Vector2Int endPosition)
         {
-            currentRoute = route;
+            if(endPosition == null)
+                return;
+            currentRoute = GameManager.Instance.GridMapManagerRef.FindRouteAStar(gridLocation,endPosition);
             if(_actorMovement != null)
             {
                 StopCoroutine(_actorMovement);
             }
-            _actorMovement = StartCoroutine(ActorMovement());
+            _actorMovement = StartCoroutine(ActorMovement(endPosition));
         }
-        IEnumerator ActorMovement()
+        IEnumerator ActorMovement(Vector2Int endPosition)
         {
             onStartMovement?.Invoke(gridLocation ,this);
             while(currentRoute.Count > 1)
             {
+                currentRoute = GameManager.Instance.GridMapManagerRef.FindRouteAStar(gridLocation,endPosition);
+
                 transform.position = GameManager.Instance.GridMapManagerRef.GridToWorldLocation(currentRoute[0]);                
                 gridLocation = currentRoute[0];
                 onAgentMove?.Invoke(currentRoute[0] , currentRoute[1] , this);

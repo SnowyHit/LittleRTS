@@ -156,7 +156,21 @@ namespace GridSystem
         {
             return new Vector3(location.x * _cellSize , location.y * _cellSize , 0f);
         }
-
+        public MapGrid FindClosestUnOccupiedGrid(MapGrid grid)
+        {
+            if(grid.Occupation == "")
+            {
+                return grid;
+            }
+            else
+            {
+                FindClosestUnOccupiedGrid(GetGrid(grid.Position + Vector2Int.right));
+                FindClosestUnOccupiedGrid(GetGrid(grid.Position + Vector2Int.left));
+                FindClosestUnOccupiedGrid(GetGrid(grid.Position + Vector2Int.up));
+                FindClosestUnOccupiedGrid(GetGrid(grid.Position + Vector2Int.down));
+            }
+            return null;
+        }
         public List<Vector2Int> FindRouteAStar(Vector2Int start, Vector2Int end)
         {
             //Check if End Grid Is reachable.
