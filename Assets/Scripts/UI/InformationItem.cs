@@ -14,12 +14,13 @@ namespace UI
         public Image HealthBarImage;
         public TMPro.TMP_Text Health;
         public Action onDestroyed;
-        public void ChangeHealthBar(float MaxValue , float currentValue)
+        public void ChangeHealthBar(float MaxValue, float currentValue)
         {
-            HealthBarImage.fillAmount = currentValue/MaxValue;
+            HealthBarImage.fillAmount = currentValue / MaxValue;
             Health.text = MaxValue + "/" + currentValue;
         }
-        private void OnDestroy() {
+        private void OnDestroy()
+        {
             onDestroyed?.Invoke();
         }
     }

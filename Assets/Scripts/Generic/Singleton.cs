@@ -17,7 +17,7 @@ namespace Generic
                 DestroyImmediate(gameObject);
                 return;
             }
-            
+
             Instance = this.GetComponent<T>();
             DontDestroyOnLoad(gameObject);
         }

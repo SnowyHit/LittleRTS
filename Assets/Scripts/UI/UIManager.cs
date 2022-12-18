@@ -19,7 +19,7 @@ namespace UI
 
         public Action<Building> onProductionItemClicked;
         public Action onResetClick;
-        public Action<Building , Agent> onMilitaryItemClicked;
+        public Action<Building, Agent> onMilitaryItemClicked;
         public GameObject ProductionPrefab;
         public GameObject DescriptionPrefab;
         public GameObject MilitaryUnitPrefab;
@@ -34,7 +34,7 @@ namespace UI
 
         public void UpdateDescriptionPanel(Building buildingToUpdateWith)
         {
-            if(buildingToUpdateWith.Type == BuildingType.Barracks)
+            if (buildingToUpdateWith.Type == BuildingType.Barracks)
             {
                 FillMilitaryProductionMenu(buildingToUpdateWith);
             }
@@ -49,12 +49,13 @@ namespace UI
             //Use ObjectPooling Here
             foreach (Building building in GameManager.Instance.AvailableBuildings)
             {
-                ProductionItem tempProdItem = Instantiate(ProductionPrefab ,ProductionMenuContent).GetComponent<ProductionItem>();
+                ProductionItem tempProdItem = Instantiate(ProductionPrefab, ProductionMenuContent).GetComponent<ProductionItem>();
                 tempProdItem.Image.sprite = building.BuildingImage;
                 tempProdItem.Name.text = building.BuildingName;
                 tempProdItem.BuildingRef = building;
                 tempProdItem.button = tempProdItem.gameObject.GetComponent<Button>();
-                tempProdItem.button.onClick.AddListener(()=>{
+                tempProdItem.button.onClick.AddListener(() =>
+                {
                     ProdItemClicked(tempProdItem);
                 });
                 productItems.Add(tempProdItem);
@@ -65,45 +66,48 @@ namespace UI
             foreach (string id in ((Barracks)referenceBuilding).ProducableAgentIDs)
             {
                 Agent tempAgent = GameManager.Instance.AgentManagerRef.GetAgentFromAllAgents(id);
-                if(tempAgent != null)
+                if (tempAgent != null)
                 {
-                    MilitaryUnitItem tempMilitaryUnitItem = Instantiate(MilitaryUnitPrefab , MilitaryMenuContent).gameObject.GetComponent<MilitaryUnitItem>();
+                    MilitaryUnitItem tempMilitaryUnitItem = Instantiate(MilitaryUnitPrefab, MilitaryMenuContent).gameObject.GetComponent<MilitaryUnitItem>();
                     tempMilitaryUnitItem.Image.sprite = tempAgent.AgentImage;
                     tempMilitaryUnitItem.Name.text = tempAgent.AgentName;
                     tempMilitaryUnitItem.BuildingRef = referenceBuilding;
                     tempMilitaryUnitItem.AgentRef = tempAgent;
-                    tempMilitaryUnitItem.button.onClick.AddListener(()=>{
+                    tempMilitaryUnitItem.button.onClick.AddListener(() =>
+                    {
                         MilitaryItemClicked(tempMilitaryUnitItem);
                     });
                     InformationMenuObjects.Add(tempMilitaryUnitItem.gameObject);
-                }                
+                }
             }
         }
         public void FillInformationMenu()
         {
             foreach (Building building in BuildingsOnInformation)
             {
-                InformationItem tempInformationItem = Instantiate(DescriptionPrefab , DescriptionMenuContent).gameObject.GetComponent<InformationItem>();
+                InformationItem tempInformationItem = Instantiate(DescriptionPrefab, DescriptionMenuContent).gameObject.GetComponent<InformationItem>();
                 tempInformationItem.Image.sprite = building.BuildingImage;
                 tempInformationItem.Name.text = building.BuildingName;
                 tempInformationItem.ChangeHealthBar(building.MaxHealthPoint, building.HealthPoint);
                 building.onHealthPointChanged += tempInformationItem.ChangeHealthBar;
-                tempInformationItem.onDestroyed += ()=>{
+                tempInformationItem.onDestroyed += () =>
+                {
                     building.onHealthPointChanged -= tempInformationItem.ChangeHealthBar;
                 };
                 InformationMenuObjects.Add(tempInformationItem.gameObject);
             }
             foreach (Agent agent in AgentsOnInformation)
             {
-                InformationItem tempInformationItem = Instantiate(DescriptionPrefab , DescriptionMenuContent).gameObject.GetComponent<InformationItem>();
+                InformationItem tempInformationItem = Instantiate(DescriptionPrefab, DescriptionMenuContent).gameObject.GetComponent<InformationItem>();
                 tempInformationItem.Image.sprite = agent.AgentImage;
                 tempInformationItem.Name.text = agent.AgentName;
-                if(agent is Soldier)
+                if (agent is Soldier)
                 {
                     Soldier soldierRef = (Soldier)agent;
                     tempInformationItem.ChangeHealthBar(soldierRef.MaxhealthPoint, soldierRef.HealthPoint);
                     soldierRef.onHealthChanged += tempInformationItem.ChangeHealthBar;
-                    tempInformationItem.onDestroyed += ()=>{
+                    tempInformationItem.onDestroyed += () =>
+                    {
                         soldierRef.onHealthChanged -= tempInformationItem.ChangeHealthBar;
                     };
                 }
@@ -122,18 +126,18 @@ namespace UI
         }
         public void MilitaryItemClicked(MilitaryUnitItem clickedItem)
         {
-            onMilitaryItemClicked?.Invoke(clickedItem.BuildingRef , clickedItem.AgentRef);
+            onMilitaryItemClicked?.Invoke(clickedItem.BuildingRef, clickedItem.AgentRef);
         }
         public void ProdItemClicked(ProductionItem clicedProdItem)
         {
-            if(clicedProdItem.Frame.color == Color.cyan)
+            if (clicedProdItem.Frame.color == Color.cyan)
             {
                 ClearClickedItems();
                 return;
             }
             foreach (var item in productItems)
             {
-                if(item == clicedProdItem)
+                if (item == clicedProdItem)
                 {
                     clicedProdItem.Frame.color = Color.cyan;
                     continue;
@@ -151,7 +155,7 @@ namespace UI
             }
             onResetClick?.Invoke();
         }
-        
+
     }
 }
 

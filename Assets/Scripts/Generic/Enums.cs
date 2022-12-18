@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Generic.Enums
-{       
+{
     public enum BuildingType
     {
-        Barracks , 
-        PowerPlant,             
+        Barracks,
+        PowerPlant,
         House,
         DefendingTower,
         Wall
@@ -16,5 +16,5 @@ namespace Generic.Enums
     {
         Soldier
     }
-    
+
 }
