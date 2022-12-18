@@ -53,6 +53,8 @@ MonoBehaviour:
   AgentName: Soldier-3
   _healthPoint: 10
   _attackPoint: 2
+  _attackSpeed: 1
+  aimedLocation: {x: 0, y: 0}
 --- !u!1 &6152826024897876076
 GameObject:
   m_ObjectHideFlags: 0

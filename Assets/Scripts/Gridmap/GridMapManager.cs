@@ -69,6 +69,10 @@ namespace GridSystem
             {
                 for (int y = 0; y < dimensions.y; y++)
                 {
+                    bool integrityOfLocation = (startingPoint.x + x > 29 || startingPoint.x + x <0)
+                    || (startingPoint.y + y > 29 || startingPoint.y + y <0);
+                    if(integrityOfLocation)
+                        return true;
                     if(_grids[startingPoint.x + x , startingPoint.y + y].Occupation != "")
                         return true;
                 }
@@ -96,6 +100,10 @@ namespace GridSystem
         }
         public MapGrid GetGrid(Vector2Int location)
         {
+            if(location.x > 29 || location.x <0)
+                return null;
+            if(location.y > 29 || location.y <0)
+                return null;
             return _grids[location.x, location.y];
         }
 
@@ -156,39 +164,50 @@ namespace GridSystem
         {
             return new Vector3(location.x * _cellSize , location.y * _cellSize , 0f);
         }
-        public MapGrid FindClosestUnOccupiedGrid(MapGrid grid)
+        public MapGrid GetClosestUnoccupiedGrid(Vector2Int grid)
         {
-            if(grid.Occupation == "")
+            HashSet<Vector2Int> pool = new HashSet<Vector2Int>();
+            HashSet<Vector2Int> visited = new HashSet<Vector2Int>(); 
+            Dictionary<Vector2Int, string> parents = new Dictionary<Vector2Int, string>();
+
+            pool.Add(grid);
+            while (pool.Count > 0)
             {
-                return grid;
+                var bestCell = pool.First();
+                visited.Add(bestCell);
+                pool.Remove(bestCell);
+                var candidates = new List<Vector2Int> {
+                    new Vector2Int(bestCell.x + 1, bestCell.y),
+                    new Vector2Int(bestCell.x - 1, bestCell.y),
+                    new Vector2Int(bestCell.x, bestCell.y + 1),
+                    new Vector2Int(bestCell.x, bestCell.y - 1),
+                };
+                foreach (var candidate in candidates)
+                {
+                    if (visited.Contains(candidate))
+                        continue;
+                    if (!isSpaceOccupied(candidate , Vector2Int.one))
+                        return GetGrid(candidate);
+                    pool.Add(candidate);
+                }
             }
-            else
-            {
-                FindClosestUnOccupiedGrid(GetGrid(grid.Position + Vector2Int.right));
-                FindClosestUnOccupiedGrid(GetGrid(grid.Position + Vector2Int.left));
-                FindClosestUnOccupiedGrid(GetGrid(grid.Position + Vector2Int.up));
-                FindClosestUnOccupiedGrid(GetGrid(grid.Position + Vector2Int.down));
-            }
-            return null;
+            return null;            
         }
         public List<Vector2Int> FindRouteAStar(Vector2Int start, Vector2Int end)
         {
-            //Check if End Grid Is reachable.
             if(!isGridTraversable(end))
             {
-                return null;
+                end = GetClosestUnoccupiedGrid(end).Position;
             }
-            
-            HashSet<Vector2Int> pool = new HashSet<Vector2Int>();// Open cells.
-            HashSet<Vector2Int> visited = new HashSet<Vector2Int>(); // Visited cells.
-            Dictionary<Vector2Int, Vector2Int> parents = new Dictionary<Vector2Int, Vector2Int>(); // Tracks where did we reach a given cell from.
+            HashSet<Vector2Int> pool = new HashSet<Vector2Int>();
+            HashSet<Vector2Int> visited = new HashSet<Vector2Int>(); 
+            Dictionary<Vector2Int, Vector2Int> parents = new Dictionary<Vector2Int, Vector2Int>();
 
-            // 1. Traverse the grid until you find the end.
             pool.Add(start);
             while (pool.Count > 0)
             {
                 var bestCell = pool
-                    .OrderBy(c => (c - start).sqrMagnitude +(5f * (end - c).sqrMagnitude)) // A* heuristics.
+                    .OrderBy(c => (c - start).sqrMagnitude +(5f * (end - c).sqrMagnitude))
                     .First();
                 visited.Add(bestCell);
                 pool.Remove(bestCell);
@@ -200,7 +219,7 @@ namespace GridSystem
                 };
                 foreach (var candidate in candidates)
                 {
-                    if (visited.Contains(candidate) || !isGridTraversable(candidate)) // OR THE GRID IS NON EXİSTENT - UNREACHABLE
+                    if (visited.Contains(candidate) || !isGridTraversable(candidate))
                         continue;
                     parents[candidate] = bestCell;
                     if (candidate == end)
@@ -211,7 +230,6 @@ namespace GridSystem
                     break;
             }
 
-            // 2. Assemble the route.
             if (!parents.ContainsKey(end))
                 return null;
             var route = new List<Vector2Int>();

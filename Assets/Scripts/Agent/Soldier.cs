@@ -11,17 +11,52 @@ namespace AgentSystem
         [SerializeField]
         private float _healthPoint;
         public float HealthPoint{get {return _healthPoint;} private set {_healthPoint = value; onHealthChanged?.Invoke(value);}}
-        
         [SerializeField]
         private float _attackPoint;
+        [SerializeField]
+        private float _attackSpeed;
         public float AttackPoint{get {return _attackPoint;} set {_attackPoint = value;}}
         public Action<float> onHealthChanged;
         public Action<Agent> onDead;
-        public void AttackBuilding(Building buildingToAttack)
-        {
-            buildingToAttack.GetDamaged(AttackPoint);
+        public Vector2Int aimedLocation;
+        private Coroutine attackBuildingCoroutine;
+        private Coroutine attackUnitCoroutine;
+        private void Start() {
+            onStartMovement += ResetAttacks;
         }
-
+        void ResetAttacks(Vector2Int location , Agent agent)
+        {
+            if(attackBuildingCoroutine != null)
+                StopCoroutine(attackBuildingCoroutine);
+            if(attackUnitCoroutine != null)
+                StopCoroutine(attackUnitCoroutine);
+        }
+        public void AttackBuildingRunner(Building buildingToAttack)
+        {
+            attackBuildingCoroutine = StartCoroutine(AttackBuilding(buildingToAttack));
+        }
+        public void AttackSoldierRunner(Soldier soldierToAttack)
+        {
+            attackUnitCoroutine = StartCoroutine(AttackSoldierCoroutine(soldierToAttack));
+        }
+        IEnumerator AttackBuilding(Building buildingToAttack)
+        {
+            while(buildingToAttack)
+            {
+                Debug.Log("asdasd22");
+                yield return new WaitForSeconds(_attackSpeed);
+                buildingToAttack?.GetDamaged(AttackPoint);
+            }
+        }
+        IEnumerator AttackSoldierCoroutine(Soldier agentToAttack)
+        {
+            while(agentToAttack)
+            {
+                Debug.Log("asdasd21");
+                yield return new WaitForSeconds(_attackSpeed);
+                agentToAttack?.GetDamaged(AttackPoint);
+            }
+        }
         public void GetDamaged(float trueDamage)
         {
             HealthPoint -= trueDamage;

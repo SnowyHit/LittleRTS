@@ -27,8 +27,6 @@ public class GameManager : Singleton<GameManager>
 
     [SerializeField]
     private Transform _buildingsParent;
-    [SerializeField]
-    private List<Agent> _selectedAgents;
 
     private MapGrid MouseButtonStartGrid;
 
@@ -73,6 +71,11 @@ public class GameManager : Singleton<GameManager>
                     {
                         tempAgent.Move(hoveringGrid.Position);
                     }
+                    if(hoveringGrid.Occupation != "" && tempAgent is Soldier)
+                    {
+                        ((Soldier)tempAgent).aimedLocation = hoveringGrid.Position;
+                        tempAgent.onMovementEnd += Attack;
+                    }
                 }
                 else
                 {
@@ -113,6 +116,22 @@ public class GameManager : Singleton<GameManager>
             MouseButtonStartGrid = null;
         }
     }
+
+    public void Attack(Vector2Int location , Agent agentRef)
+    {
+        Debug.Log("asdasd");
+        Soldier soldierRef = (Soldier)agentRef;
+        string aimedGridOccupation = GridMapManagerRef.GetGrid(soldierRef.aimedLocation).Occupation;
+        if(GetPlacedBuilding(aimedGridOccupation))
+        {
+            soldierRef.AttackBuildingRunner(GetPlacedBuilding(aimedGridOccupation));
+        }
+        else if(AgentManagerRef.GetAgent(soldierRef.aimedLocation))
+        {
+            Soldier soldierToAttack = (Soldier)AgentManagerRef.GetAgent(soldierRef.aimedLocation);
+            soldierRef.AttackSoldierRunner(soldierToAttack);
+        }
+    }
     void BuildingPlacementCheckRunner(Building buildingToPlace)
     {
         PlacingBuilding = true;
@@ -150,7 +169,7 @@ public class GameManager : Singleton<GameManager>
     }
     void SpawnMilitaryUnit(Building buildingRef, Agent agentRef)
     {
-        AgentManagerRef.SpawnAgent(agentRef.Id , GridMapManagerRef.GetGrid(new Vector2Int(0,0)) , GridMapManagerRef.GetGrid(((Barracks)buildingRef).FlagPoint));
+        AgentManagerRef.SpawnAgent(agentRef.Id , GridMapManagerRef.GetClosestUnoccupiedGrid(buildingRef.baseGrid) , GridMapManagerRef.GetGrid(((Barracks)buildingRef).FlagPoint));
     }
 
     public void PlaceBuilding(Vector2Int startingLocation)
@@ -164,13 +183,20 @@ public class GameManager : Singleton<GameManager>
     }
     void DestroyBuilding(Building buildingToDestroy)
     {
-        GameObject tempGO = _placedBuildings.Find(building => building == buildingToDestroy).gameObject;
-        _placedBuildings.Remove(buildingToDestroy);
-        GridMapManagerRef.UnOccupyGrids(buildingToDestroy.baseGrid, buildingToDestroy.Dimensions);
-        Destroy(tempGO);
+        if(_placedBuildings.Find(building => building == buildingToDestroy))
+        {
+            GameObject tempGO = _placedBuildings.Find(building => building == buildingToDestroy).gameObject;
+            _placedBuildings.Remove(buildingToDestroy);
+            GridMapManagerRef.UnOccupyGrids(buildingToDestroy.baseGrid, buildingToDestroy.Dimensions);
+            Destroy(tempGO);
+        }
     }
     public Building GetPlacedBuilding(string uniqID)
     {
+        if(uniqID == null)
+        {
+            return null;
+        }
         return _placedBuildings[int.Parse(uniqID.Split('/')[1])];
     }
 }
