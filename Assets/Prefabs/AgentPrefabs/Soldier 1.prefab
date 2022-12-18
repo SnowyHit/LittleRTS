@@ -49,7 +49,10 @@ MonoBehaviour:
   MoveSpeed: 1
   gridLocation: {x: 0, y: 0}
   currentRoute: []
-  agentSpriteRenderer: {fileID: 4219782611855186080}
+  AgentImage: {fileID: 21300000, guid: b0936a07f21b610468fc9843cb89d045, type: 3}
+  AgentName: Soldier - 1
+  _healthPoint: 10
+  _attackPoint: 10
 --- !u!1 &6152826024897876076
 GameObject:
   m_ObjectHideFlags: 0

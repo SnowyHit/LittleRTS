@@ -16,6 +16,8 @@ namespace AgentSystem
         public Action<Vector2Int , Vector2Int , Agent> onAgentMove;
         public Action<Vector2Int , Agent> onStartMovement;
         Coroutine _actorMovement;
+        public Sprite AgentImage;
+        public string AgentName;
         // Start is called before the first frame update
         public void Move(List<Vector2Int> route)
         {

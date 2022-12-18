@@ -8,8 +8,11 @@ namespace AgentSystem
 {
     public class Soldier : Agent
     {
+        [SerializeField]
         private float _healthPoint;
         public float HealthPoint{get {return _healthPoint;} private set {_healthPoint = value; onHealthChanged?.Invoke(value);}}
+        
+        [SerializeField]
         private float _attackPoint;
         public float AttackPoint{get {return _attackPoint;} set {_attackPoint = value;}}
         public Action<float> onHealthChanged;

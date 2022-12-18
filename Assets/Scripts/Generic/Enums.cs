@@ -12,12 +12,6 @@ namespace Generic.Enums
         DefendingTower,
         Wall
     }
-
-    public enum GameState
-    {
-        Paused,
-        Started,
-    }
     public enum AgentType
     {
         Soldier

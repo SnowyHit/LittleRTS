@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CameraManager : MonoBehaviour
 {
@@ -20,13 +21,17 @@ public class CameraManager : MonoBehaviour
         
     }
     private void Update()
-    {
+    {   
         CheckZoom(Input.mouseScrollDelta.y);
         CheckMousePos(Input.mousePosition);
         CheckKeyboardInputs();
     }
     public void CheckZoom(float scroll)
     {
+        if(EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
         if(scroll == 0)
         {
             return;

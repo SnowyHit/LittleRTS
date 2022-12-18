@@ -50,7 +50,13 @@ MonoBehaviour:
   _healthPoint: 100
   _type: 0
   Dimensions: {x: 4, y: 4}
+  baseGrid: {x: 0, y: 0}
   Prefab: {fileID: 4308576243206677110, guid: 04d7c1fa572af6f4baf980fc3f32a498, type: 3}
+  ProducableAgentIDs:
+  - 1
+  - 2
+  - 3
+  FlagPoint: {x: 0, y: 0}
 --- !u!1 &4557398939212923999
 GameObject:
   m_ObjectHideFlags: 0

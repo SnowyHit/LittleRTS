@@ -24,7 +24,7 @@ namespace GridSystem
             {
                 for (int j = 0; j < 30; j++)
                 {
-                    GameObject tempGrid = Instantiate(TilePrefab , new Vector3((i*_cellSize)+_cellSize/2,(j*_cellSize)+_cellSize/2,0f),Quaternion.identity,this.transform);
+                    GameObject tempGrid = Instantiate(TilePrefab , new Vector3((i*_cellSize)+_cellSize/2,(j*_cellSize)+_cellSize/2, 2f),Quaternion.identity,this.transform);
                     tempGrid.name = "Grid("+i+","+j+")"; 
                     _grids[i,j] = new MapGrid(
                         tempGrid
@@ -97,6 +97,33 @@ namespace GridSystem
         public MapGrid GetGrid(Vector2Int location)
         {
             return _grids[location.x, location.y];
+        }
+
+        public List<MapGrid> GetAllGrids(MapGrid startGrid , MapGrid endGrid )
+        {
+            List<MapGrid> tempList = new List<MapGrid>();
+            int YStart = startGrid.Position.y;
+            int YEnd = endGrid.Position.y;
+            int XStart = startGrid.Position.x;
+            int XEnd = endGrid.Position.x;
+            if(YStart > YEnd)
+            {
+                YStart = endGrid.Position.y;
+                YEnd = startGrid.Position.y;
+            }
+            if(XStart > XEnd)
+            {
+                XStart = endGrid.Position.x;
+                XEnd = startGrid.Position.x;
+            }
+            for (int x = XStart ; x <= XEnd; x++)
+            {
+                for (int y = YStart; y <= YEnd; y++)
+                {
+                    tempList.Add(_grids[x,y]);
+                }
+            }
+            return tempList;
         }
         public void HighlightGrids(Vector2Int position , Vector2Int dimension , Color color)
         {

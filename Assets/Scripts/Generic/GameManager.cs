@@ -9,12 +9,10 @@ using GridSystem;
 using Buildings;
 using UI;
 using AgentSystem;
+using UnityEngine.EventSystems;
 
 public class GameManager : Singleton<GameManager>
 {
-    private GameState state; 
-    public GameState State{get{return state ;} private set{state = value; onGameStateChanged?.Invoke(value);}}
-    Action<GameState> onGameStateChanged;
     public GridMapManager GridMapManagerRef;
     public UIManager UIManagerRef;    
     public AgentManager AgentManagerRef;
@@ -32,39 +30,83 @@ public class GameManager : Singleton<GameManager>
     [SerializeField]
     private List<Agent> _selectedAgents;
 
+    private MapGrid MouseButtonStartGrid;
+
+    private List<MapGrid> SelectedGrids = new List<MapGrid>();
+    private List<String> occupationOfGrids = new List<String>();
+
     private void Start()
     {
         UIManagerRef.onProductionItemClicked += BuildingPlacementCheckRunner;
+        UIManagerRef.onResetClick += ResetPlacingBuilding;
     }
     private void Update() 
     {
         if(PlacingBuilding)
         {
             BuildingPlacementCheck();
+            return;
         }
-        else if(Input.GetMouseButtonUp(0))
+        CheckMouseInputs();
+    }
+
+    void CheckMouseInputs()
+    {
+        if(EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+        if(Input.GetMouseButtonUp(1))
+        {
+            MapGrid hoveringGrid = GridMapManagerRef.GetGrid(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            foreach (MapGrid grid in SelectedGrids)
+            {
+                if(grid.Occupation == "" || occupationOfGrids.Contains(grid.Occupation))
+                    continue;
+                if(grid.isAgent)
+                {
+                    Agent tempAgent = AgentManagerRef.GetAgent(grid.Position);
+                    Vector2Int endGridLocation = hoveringGrid.Position;
+                    Vector2Int startGridLocation = tempAgent.gridLocation;
+                    tempAgent.Move(GameManager.Instance.GridMapManagerRef.FindRouteAStar(startGridLocation ,endGridLocation));
+                }
+                else
+                {
+                    Building tempBuilding = GetPlacedBuilding(grid.Occupation);
+                    if(tempBuilding.Type == BuildingType.Barracks)
+                    {
+                        ((Barracks)tempBuilding).SetFlagPoint(hoveringGrid.Position); 
+                    }
+                }
+            }
+        }
+        else if(Input.GetMouseButtonDown(0))
+        {
+            SelectedGrids.Clear();
+            occupationOfGrids.Clear();
+            UIManagerRef.ResetInformationMenu();
+            MouseButtonStartGrid = GridMapManagerRef.GetGrid(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        }
+        else if(Input.GetMouseButtonUp(0) && MouseButtonStartGrid != null)
         {
             MapGrid tempGrid = GridMapManagerRef.GetGrid(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-            _selectedAgents.Clear();
-            if(tempGrid.isAgent)
+            SelectedGrids = GridMapManagerRef.GetAllGrids(MouseButtonStartGrid ,tempGrid);
+            foreach (MapGrid grid in SelectedGrids)
             {
-                _selectedAgents.Add(AgentManagerRef.GetAgent(tempGrid.Position));
-                AgentManagerRef.SetSelectedAgents(_selectedAgents);
+                if(grid.Occupation == "" || occupationOfGrids.Contains(grid.Occupation))
+                    continue;
+                occupationOfGrids.Add(grid.Occupation);
+                if(grid.isAgent)
+                {
+                    UIManagerRef.UpdateDescriptionPanel(AgentManagerRef.GetAgent(grid.Position));
+                }
+                else
+                {
+                    UIManagerRef.UpdateDescriptionPanel(GetPlacedBuilding(grid.Occupation));
+                }
             }
-            else if(tempGrid.Occupation != "")
-            {
-                UIManagerRef.UpdateDescriptionPanel(GetPlacedBuilding(tempGrid.Occupation));
-                GetPlacedBuilding(tempGrid.Occupation).GetDamaged(10);
-            }
-        }
-        else if(Input.GetMouseButtonUp(1))
-        {
-            MapGrid tempGrid = GridMapManagerRef.GetGrid(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-            if(tempGrid.Occupation == "")
-            {
-                AgentManagerRef.SpawnAgent("1",tempGrid.Position);
-            }
-           
+            UIManagerRef.FillInformationMenu();
+            MouseButtonStartGrid = null;
         }
     }
     void BuildingPlacementCheckRunner(Building buildingToPlace)
@@ -72,8 +114,19 @@ public class GameManager : Singleton<GameManager>
         PlacingBuilding = true;
         _buildingToPlace= buildingToPlace;
     }
+    void ResetPlacingBuilding()
+    {
+        GridMapManagerRef.ResetGridHighlights();
+        PlacingBuilding = false;
+        _buildingToPlace= null;
+    }
     void BuildingPlacementCheck()
     {
+        if(EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+
         Vector2Int hoveringGridLocation = GridMapManagerRef.GetGridLocation(Camera.main.ScreenToWorldPoint(Input.mousePosition));
         bool isOccupied = GridMapManagerRef.isSpaceOccupied(hoveringGridLocation, _buildingToPlace.Dimensions);
         if(isOccupied)
