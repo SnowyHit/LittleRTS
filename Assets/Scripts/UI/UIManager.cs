@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Linq;
 using Buildings;
 using AgentSystem;
 using Generic.Enums;
@@ -26,10 +27,39 @@ namespace UI
         public List<Building> BuildingsOnInformation = new List<Building>();
         public List<Agent> AgentsOnInformation = new List<Agent>();
         public List<GameObject> InformationMenuObjects = new List<GameObject>();
+        public List<GameObject> MilitaryMenuObjects = new List<GameObject>();
+
+        public List<GameObject> DescriptionObjectPool = new List<GameObject>();
+        public List<GameObject> MilitaryUnitPool = new List<GameObject>();
         // Start is called before the first frame update
         void Start()
         {
             FillProductionMenu();
+        }
+
+        GameObject TakeFromDescriptionPool()
+        {
+            foreach (GameObject go in DescriptionObjectPool)
+            {
+                if(!go.activeSelf)
+                {
+                    go.SetActive(true);
+                    return go;
+                }
+            }
+            DescriptionObjectPool.Add(Instantiate(DescriptionPrefab, DescriptionMenuContent));
+            return DescriptionObjectPool.Last();
+        }
+
+        void GiveBackToDescriptionPool(GameObject gameObjectRef)
+        {
+            foreach (GameObject go in DescriptionObjectPool)
+            {
+                if (go == gameObjectRef)
+                {
+                    go.SetActive(false);
+                }
+            }
         }
 
         public void UpdateDescriptionPanel(Building buildingToUpdateWith)
@@ -46,7 +76,6 @@ namespace UI
         }
         public void FillProductionMenu()
         {
-            //Use ObjectPooling Here
             foreach (Building building in GameManager.Instance.AvailableBuildings)
             {
                 ProductionItem tempProdItem = Instantiate(ProductionPrefab, ProductionMenuContent).GetComponent<ProductionItem>();
@@ -77,20 +106,21 @@ namespace UI
                     {
                         MilitaryItemClicked(tempMilitaryUnitItem);
                     });
-                    InformationMenuObjects.Add(tempMilitaryUnitItem.gameObject);
+                    MilitaryMenuObjects.Add(tempMilitaryUnitItem.gameObject);
                 }
             }
         }
         public void FillInformationMenu()
         {
+            // Using object pooling for description UI's ,because this is the most intense part on Instantiating/Destroying objects.
             foreach (Building building in BuildingsOnInformation)
             {
-                InformationItem tempInformationItem = Instantiate(DescriptionPrefab, DescriptionMenuContent).gameObject.GetComponent<InformationItem>();
+                InformationItem tempInformationItem = TakeFromDescriptionPool().GetComponent<InformationItem>();
                 tempInformationItem.Image.sprite = building.BuildingImage;
                 tempInformationItem.Name.text = building.BuildingName;
                 tempInformationItem.ChangeHealthBar(building.MaxHealthPoint, building.HealthPoint);
                 building.onHealthPointChanged += tempInformationItem.ChangeHealthBar;
-                tempInformationItem.onDestroyed += () =>
+                tempInformationItem.onDisabled += () =>
                 {
                     building.onHealthPointChanged -= tempInformationItem.ChangeHealthBar;
                 };
@@ -98,7 +128,7 @@ namespace UI
             }
             foreach (Agent agent in AgentsOnInformation)
             {
-                InformationItem tempInformationItem = Instantiate(DescriptionPrefab, DescriptionMenuContent).gameObject.GetComponent<InformationItem>();
+                InformationItem tempInformationItem = TakeFromDescriptionPool().gameObject.GetComponent<InformationItem>();
                 tempInformationItem.Image.sprite = agent.AgentImage;
                 tempInformationItem.Name.text = agent.AgentName;
                 if (agent is Soldier)
@@ -106,7 +136,7 @@ namespace UI
                     Soldier soldierRef = (Soldier)agent;
                     tempInformationItem.ChangeHealthBar(soldierRef.MaxhealthPoint, soldierRef.HealthPoint);
                     soldierRef.onHealthChanged += tempInformationItem.ChangeHealthBar;
-                    tempInformationItem.onDestroyed += () =>
+                    tempInformationItem.onDisabled += () =>
                     {
                         soldierRef.onHealthChanged -= tempInformationItem.ChangeHealthBar;
                     };
@@ -116,8 +146,11 @@ namespace UI
         }
         public void ResetInformationMenu()
         {
-            //Use ObjectPooling Here
             foreach (GameObject item in InformationMenuObjects)
+            {
+                GiveBackToDescriptionPool(item);
+            }
+            foreach (var item in MilitaryMenuObjects)
             {
                 Destroy(item);
             }
