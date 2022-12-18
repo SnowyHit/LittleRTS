@@ -24,6 +24,10 @@ namespace AgentSystem
             if(endPosition == null)
                 return;
             currentRoute = GameManager.Instance.GridMapManagerRef.FindRouteAStar(gridLocation,endPosition);
+            if(currentRoute == null)
+            {
+                return;
+            }
             if(_actorMovement != null)
             {
                 StopCoroutine(_actorMovement);
@@ -39,8 +43,8 @@ namespace AgentSystem
                 {
                     currentRoute[1] = GameManager.Instance.GridMapManagerRef.GetClosestUnoccupiedGrid(currentRoute[1]).Position;
                 }
-                transform.position = GameManager.Instance.GridMapManagerRef.GridToWorldLocation(currentRoute[0]);           
-                gridLocation = currentRoute[0];
+                transform.position = GameManager.Instance.GridMapManagerRef.GridToWorldLocation(currentRoute[1]);           
+                gridLocation = currentRoute[1];
                 onAgentMove?.Invoke(currentRoute[0] , currentRoute[1] , this);
                 currentRoute.RemoveAt(0);
                 yield return new WaitForSeconds(1f/MoveSpeed + UnityEngine.Random.Range(0,0.1f));

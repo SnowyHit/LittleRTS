@@ -207,7 +207,7 @@ namespace GridSystem
             while (pool.Count > 0)
             {
                 var bestCell = pool
-                    .OrderBy(c => (c - start).sqrMagnitude +(5f * (end - c).sqrMagnitude))
+                    .OrderBy(c => (c - start).sqrMagnitude +(5f * (end - c).sqrMagnitude)) //Weighted A* Heuristics.
                     .First();
                 visited.Add(bestCell);
                 pool.Remove(bestCell);
@@ -239,6 +239,7 @@ namespace GridSystem
                 route.Insert(0, cell);
                 cell = parents[cell];
             }
+            route.Insert(0, start);
             return route;
         }
     }

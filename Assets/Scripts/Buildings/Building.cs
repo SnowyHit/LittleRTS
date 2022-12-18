@@ -15,20 +15,26 @@ namespace Buildings
         [SerializeField]
         private Sprite buildingImage;
         [SerializeField]
+        public float MaxHealthPoint;
+        [SerializeField]
         private float _healthPoint;
         [SerializeField]
         private BuildingType _type;
         public BuildingType Type {get{return _type;} protected set{_type = value ;}}
-        public float HealthPoint {get{return _healthPoint;} protected set{_healthPoint = value ; onHealthPointChanged?.Invoke(value); CheckDestroyStatus(value);}}
+        public float HealthPoint {get{return _healthPoint;} protected set{_healthPoint = value ; onHealthPointChanged?.Invoke(MaxHealthPoint,value); CheckDestroyStatus(value);}}
         public string BuildingID{get{return buildingID;} private set{}}
         public string BuildingName{get{return buildingName;} private set{}}
         public Sprite BuildingImage{get{return buildingImage;} private set{}}
         public Vector2Int Dimensions;
-        public Action<float> onHealthPointChanged;
+        public Action<float , float> onHealthPointChanged;
         public Action<Building> onDestroyed;
         public Vector2Int baseGrid;
         public GameObject Prefab;
-        
+
+        private void Start()
+        {
+            MaxHealthPoint = HealthPoint;
+        }        
         public void GetDamaged(float trueDamage)
         {
             HealthPoint -= trueDamage;

@@ -86,6 +86,11 @@ namespace UI
                 InformationItem tempInformationItem = Instantiate(DescriptionPrefab , DescriptionMenuContent).gameObject.GetComponent<InformationItem>();
                 tempInformationItem.Image.sprite = building.BuildingImage;
                 tempInformationItem.Name.text = building.BuildingName;
+                tempInformationItem.ChangeHealthBar(building.MaxHealthPoint, building.HealthPoint);
+                building.onHealthPointChanged += tempInformationItem.ChangeHealthBar;
+                tempInformationItem.onDestroyed += ()=>{
+                    building.onHealthPointChanged -= tempInformationItem.ChangeHealthBar;
+                };
                 InformationMenuObjects.Add(tempInformationItem.gameObject);
             }
             foreach (Agent agent in AgentsOnInformation)
@@ -93,6 +98,15 @@ namespace UI
                 InformationItem tempInformationItem = Instantiate(DescriptionPrefab , DescriptionMenuContent).gameObject.GetComponent<InformationItem>();
                 tempInformationItem.Image.sprite = agent.AgentImage;
                 tempInformationItem.Name.text = agent.AgentName;
+                if(agent is Soldier)
+                {
+                    Soldier soldierRef = (Soldier)agent;
+                    tempInformationItem.ChangeHealthBar(soldierRef.MaxhealthPoint, soldierRef.HealthPoint);
+                    soldierRef.onHealthChanged += tempInformationItem.ChangeHealthBar;
+                    tempInformationItem.onDestroyed += ()=>{
+                        soldierRef.onHealthChanged -= tempInformationItem.ChangeHealthBar;
+                    };
+                }
                 InformationMenuObjects.Add(tempInformationItem.gameObject);
             }
         }

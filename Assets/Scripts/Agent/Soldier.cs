@@ -9,20 +9,23 @@ namespace AgentSystem
     public class Soldier : Agent
     {
         [SerializeField]
+        public float MaxhealthPoint;
+        [SerializeField]
         private float _healthPoint;
-        public float HealthPoint{get {return _healthPoint;} private set {_healthPoint = value; onHealthChanged?.Invoke(value);}}
+        public float HealthPoint{get {return _healthPoint;} private set {_healthPoint = value; onHealthChanged?.Invoke(MaxhealthPoint,value);}}
         [SerializeField]
         private float _attackPoint;
         [SerializeField]
         private float _attackSpeed;
         public float AttackPoint{get {return _attackPoint;} set {_attackPoint = value;}}
-        public Action<float> onHealthChanged;
+        public Action<float , float> onHealthChanged;
         public Action<Agent> onDead;
         public Vector2Int aimedLocation;
         private Coroutine attackBuildingCoroutine;
         private Coroutine attackUnitCoroutine;
         private void Start() {
             onStartMovement += ResetAttacks;
+            MaxhealthPoint = HealthPoint;
         }
         void ResetAttacks(Vector2Int location , Agent agent)
         {
@@ -43,7 +46,6 @@ namespace AgentSystem
         {
             while(buildingToAttack)
             {
-                Debug.Log("asdasd22");
                 yield return new WaitForSeconds(_attackSpeed);
                 buildingToAttack?.GetDamaged(AttackPoint);
             }
@@ -52,7 +54,6 @@ namespace AgentSystem
         {
             while(agentToAttack)
             {
-                Debug.Log("asdasd21");
                 yield return new WaitForSeconds(_attackSpeed);
                 agentToAttack?.GetDamaged(AttackPoint);
             }

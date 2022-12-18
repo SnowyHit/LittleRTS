@@ -5,6 +5,7 @@ using AgentSystem;
 
 namespace GridSystem
 {
+    [System.Serializable]
     public class MapGrid
     {
         private byte weight;

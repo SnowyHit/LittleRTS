@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Buildings;
-
+using System;
 
 namespace UI
 {
@@ -11,5 +11,16 @@ namespace UI
     {
         public Image Image;
         public TMPro.TMP_Text Name;
+        public Image HealthBarImage;
+        public TMPro.TMP_Text Health;
+        public Action onDestroyed;
+        public void ChangeHealthBar(float MaxValue , float currentValue)
+        {
+            HealthBarImage.fillAmount = currentValue/MaxValue;
+            Health.text = MaxValue + "/" + currentValue;
+        }
+        private void OnDestroy() {
+            onDestroyed?.Invoke();
+        }
     }
 }

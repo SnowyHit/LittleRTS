@@ -66,7 +66,7 @@ namespace AgentSystem
                     {
                         ((Soldier)tempAgent).onDead += RemoveAgent;
                     }
-                    GameManager.Instance.GridMapManagerRef.OccupyGrids(tempAgent.Id + "/" + spawnGrid.Position , spawnGrid.Position , Vector2Int.one);
+                    GameManager.Instance.GridMapManagerRef.OccupyGrids(tempAgent.Id + "-" + spawnGrid.Position , spawnGrid.Position , Vector2Int.one);
                     tempAgent.gridLocation = spawnGrid.Position;
                     tempAgent.onAgentMove += AgentMovementSyncWithGrids;
                     tempAgent.onStartMovement += AgentMovementStartUnoccupyGrids;
@@ -83,7 +83,7 @@ namespace AgentSystem
         public void AgentMovementSyncWithGrids(Vector2Int movementStart , Vector2Int movementEnd , Agent agent)
         {
             MapGrid lastGrid = GameManager.Instance.GridMapManagerRef.GetGrid(movementStart);
-            GameManager.Instance.GridMapManagerRef.OccupyGrids(agent.Id + "/" + movementEnd ,movementEnd, Vector2Int.one);
+            GameManager.Instance.GridMapManagerRef.OccupyGrids(agent.Id + "-" + movementEnd ,movementEnd, Vector2Int.one);
             GameManager.Instance.GridMapManagerRef.UnOccupyGrids(movementStart, Vector2Int.one);
             GameManager.Instance.GridMapManagerRef.GetGrid(movementEnd).isAgent = true;
         }
@@ -93,10 +93,13 @@ namespace AgentSystem
         }
         public void RemoveAgent(Agent agentToRemove)
         {
-            GameObject tempGO = _activeAgents.Find(agent => agent == agentToRemove).gameObject;
-            _activeAgents.Remove(agentToRemove);
-            GameManager.Instance.GridMapManagerRef.UnOccupyGrids(agentToRemove.gridLocation, Vector2Int.one);
-            Destroy(tempGO);
+            if(_activeAgents.Find(agent => agent == agentToRemove))
+            {
+                GameObject tempGO = _activeAgents.Find(agent => agent == agentToRemove).gameObject;
+                _activeAgents.Remove(agentToRemove);
+                GameManager.Instance.GridMapManagerRef.UnOccupyGrids(agentToRemove.gridLocation, Vector2Int.one);
+                Destroy(tempGO);
+            }
         }
     }
 

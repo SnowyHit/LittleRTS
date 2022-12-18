@@ -31,6 +31,8 @@ public class GameManager : Singleton<GameManager>
     private MapGrid MouseButtonStartGrid;
 
     private List<MapGrid> SelectedGrids = new List<MapGrid>();
+
+    private List<Agent> SelectedAgents = new List<Agent>();
     private List<String> occupationOfGrids = new List<String>();
 
     private void Start()
@@ -64,21 +66,9 @@ public class GameManager : Singleton<GameManager>
                 if(grid.Occupation == "" || occupationOfGrids.Contains(grid.Occupation))
                     continue;
                 occupationOfGrids.Add(grid.Occupation);
-                if(grid.isAgent)
+                if(!grid.isAgent)
                 {
-                    Agent tempAgent = AgentManagerRef.GetAgent(grid.Position);
-                    if(tempAgent != null)
-                    {
-                        tempAgent.Move(hoveringGrid.Position);
-                    }
-                    if(hoveringGrid.Occupation != "" && tempAgent is Soldier)
-                    {
-                        ((Soldier)tempAgent).aimedLocation = hoveringGrid.Position;
-                        tempAgent.onMovementEnd += Attack;
-                    }
-                }
-                else
-                {
+                    
                     Building tempBuilding = GetPlacedBuilding(grid.Occupation);
                     if(tempBuilding.Type == BuildingType.Barracks)
                     {
@@ -86,10 +76,24 @@ public class GameManager : Singleton<GameManager>
                     }
                 }
             }
+            foreach (Agent agent in SelectedAgents)
+            {
+                if(agent != null)
+                {
+                    agent.Move(hoveringGrid.Position);
+                    agent.onMovementEnd -= Attack;
+                }
+                if(hoveringGrid.Occupation != "" && agent is Soldier)
+                {
+                    ((Soldier)agent).aimedLocation = hoveringGrid.Position;
+                    agent.onMovementEnd += Attack;
+                }
+            }
         }
         else if(Input.GetMouseButtonDown(0))
         {
             SelectedGrids.Clear();
+            SelectedAgents.Clear();
             occupationOfGrids.Clear();
             UIManagerRef.ResetInformationMenu();
             MouseButtonStartGrid = GridMapManagerRef.GetGrid(Camera.main.ScreenToWorldPoint(Input.mousePosition));
@@ -105,12 +109,16 @@ public class GameManager : Singleton<GameManager>
                 occupationOfGrids.Add(grid.Occupation);
                 if(grid.isAgent)
                 {
-                    UIManagerRef.UpdateDescriptionPanel(AgentManagerRef.GetAgent(grid.Position));
+                    SelectedAgents.Add(AgentManagerRef.GetAgent(grid.Position));
                 }
                 else
                 {
                     UIManagerRef.UpdateDescriptionPanel(GetPlacedBuilding(grid.Occupation));
                 }
+            }
+            foreach (Agent agent in SelectedAgents)
+            {
+                UIManagerRef.UpdateDescriptionPanel(agent);
             }
             UIManagerRef.FillInformationMenu();
             MouseButtonStartGrid = null;
@@ -119,7 +127,6 @@ public class GameManager : Singleton<GameManager>
 
     public void Attack(Vector2Int location , Agent agentRef)
     {
-        Debug.Log("asdasd");
         Soldier soldierRef = (Soldier)agentRef;
         string aimedGridOccupation = GridMapManagerRef.GetGrid(soldierRef.aimedLocation).Occupation;
         if(GetPlacedBuilding(aimedGridOccupation))
@@ -194,6 +201,10 @@ public class GameManager : Singleton<GameManager>
     public Building GetPlacedBuilding(string uniqID)
     {
         if(uniqID == null)
+        {
+            return null;
+        }
+        if(uniqID.Split('/').Count() == 1)
         {
             return null;
         }
